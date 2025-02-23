@@ -47,7 +47,8 @@ color applyStrokes(
     float seed
 )
 {
-    vector uv = rawUV + get3DWhiteNoise(seed);
+    vector whiteNoise3D = get3DWhiteNoise(seed);
+    vector uv = rawUV + whiteNoise3D;
 
     // Multiply
     vector mulValue = vector(20.0, 20.0, 20.0);
@@ -81,9 +82,11 @@ color applyStrokes(
                     "alpha", alpha, "interp", "linear");
 
     // Get input color from texture
-    color colorTexture = repeat_texture(colorTextureFilepath, scaledFloor.x, scaledFloor.y, 2.0);
+    // Get uv coordinate for center of tile
+    vector textureUV = (floorVec + vector(0.5, 0.5, 0.0))/mulValue - whiteNoise3D;
+    color colorTexture = repeat_texture(colorTextureFilepath, textureUV.x, textureUV.y, 1.0);
 
-    if (alpha == 0.0)
+    if (alpha < 0.6)
     {
         // TODO: Return 1 for subtractive color mixing?
         return color(0.0);
