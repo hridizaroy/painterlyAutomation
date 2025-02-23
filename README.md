@@ -5,8 +5,6 @@ Painterly Automation is an all-in-one OSL script that helps 3D artists texture t
 
 Painterly Automation can be used to paint-ify any texture map. This includes maps such as albedo, normal, roughness, metalic etc. to be driven by the script's unique painterly effect in how the object interacts with scene lighting.
 
-## Dependencies
-
 ## Demos
 ### Dependencies
 Must have Blender 4.3.x or Maya 2025 installed.
