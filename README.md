@@ -30,4 +30,10 @@ For Blender: Create a script node, then attach the script as an external file an
 
 For Maya: In the hypershade editor, create an aiOslShader node, then import the script and compile it. The UV input can be accessed via the place2dTexture Node and the output can be accessed via the Out Color channel of the OSL shader node. Plug this output map into the aiStandardSurface to drive your desired channel.
 
-## Examples
+## Sceenshots
+- Watercolor effect
+![Watercolor effect](./Screenshots/watercolor.png)
+- Acrylic effect
+![Acrylic effect](./Screenshots/acrylic.png)
+- Watercolor-acrylic halfway blend effect
+![Watercolor-acrylic halfway blend effect](./Screenshots/watercolor_acrylic.png)
