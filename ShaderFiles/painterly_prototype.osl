@@ -44,14 +44,15 @@ color applyStrokes(
     string strokeTextureFilepath,
     string colorTextureFilepath,
     vector rawUV,
-    float seed
+    float seed,
+    float uvMulFactor
 )
 {
     vector whiteNoise3D = get3DWhiteNoise(seed);
     vector uv = rawUV + whiteNoise3D;
 
     // Multiply
-    vector mulValue = vector(20.0, 20.0, 20.0);
+    vector mulValue = vector(uvMulFactor, uvMulFactor, uvMulFactor);
     vector scaledUV = uv * mulValue;
 
     // Get modulo
@@ -107,11 +108,12 @@ color applyStrokes(
         1.0 means fully acrylic
 */
 shader painterlyPrototype(
-    vector uv = vector(0.0), // UV Map
+    vector uv = vector(0.0), // Coords from UV Map
     float acrylicFactorRaw = 0.0,
     string strokeTextureFilepath = "../ShaderResources/brushStroke.png",
     string colorTextureFilepath = "../ShaderResources/colorTexture10.jpg",
     int numIterationsRaw = 15,
+    float strokeScale = 0.05,
     output vector out_color = vector(0.0, 0.0, 0.0)
 )
 {
@@ -119,16 +121,18 @@ shader painterlyPrototype(
     // vector uv;
     // getattribute("geom:uv", uv);
 
-    int numIterations = clamp(numIterationsRaw, 0, 100);
+    int numIterations = clamp(numIterationsRaw, 1, 100);
 
     float acrylicFactor = clamp(acrylicFactorRaw, 0.0, 1.0);
 
+    float uvMulFactor = 1.0/clamp(strokeScale, 0.0, 1.0);
+
     color finalColor = applyStrokes(strokeTextureFilepath, colorTextureFilepath,
-                                    uv, 0);
+                                    uv, 0, uvMulFactor);
     for (int ii = 1; ii < numIterations; ii++)
     {
         color texColor = applyStrokes(strokeTextureFilepath, colorTextureFilepath,
-                                    uv, ii);
+                                    uv, ii, uvMulFactor);
         
         if (length(texColor - color(0.0)) > 0.001)
         {
