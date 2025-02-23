@@ -1,0 +1,155 @@
+float fract(float input)
+{
+    return input - floor(input);
+}
+
+vector fract(vector input)
+{
+    return input - floor(input);
+}
+
+float getWhiteNoise(vector seed)
+{
+    return fract(sin(dot(seed, vector(12.9898, 78.233, 102.38364))) * 43758.5453123);
+}
+
+vector get3DWhiteNoise(float seed)
+{
+    return fract(sin(seed * vector(12.9898, 78.233, 102.38364)) * 43758.5453123);
+}
+
+color repeat_texture(
+    string filename,
+    float texU,
+    float texV,
+    float repetitions,
+)
+{
+    float s = texU;
+    float t = texV;
+
+    s *= repetitions;
+    t *= repetitions;
+    
+    s = fmod(s, 1.0);
+    t = fmod(t, 1.0);
+    
+    color finalColor = texture(filename, s, t);
+
+    return finalColor;
+}
+
+
+color applyStrokes(
+    string strokeTextureFilepath,
+    string colorTextureFilepath,
+    vector rawUV,
+    float seed
+)
+{
+    vector uv = rawUV + get3DWhiteNoise(seed);
+
+    // Multiply
+    vector mulValue = vector(20.0, 20.0, 20.0);
+    vector scaledUV = uv * mulValue;
+
+    // Get modulo
+    vector modDivisor = vector(1.0, 1.0, 1.0);
+    vector moduloVec = mod(scaledUV, modDivisor);
+
+    // Get floor
+    vector floorVec = floor(scaledUV);
+
+    // Scale down floor values
+    float floorScaleFactor = 0.1;
+    vector scaledFloor = floorVec * floorScaleFactor;
+
+    // Rotate by a random angle
+    float whiteNoise = getWhiteNoise(scaledFloor);
+    float angle = whiteNoise * M_2PI;
+
+    // Axis-angle rotation about a given center
+    vector axis = vector(0.0, 0.0, 1.0);
+    vector center = vector(0.5, 0.5, 0.5);
+    moduloVec -= center; // translate such that center is at origin
+    vector rotatedUV = rotate(moduloVec, angle, axis);
+    rotatedUV += center; // transform back to position
+
+    // get brush stroke texture
+    float alpha;
+    color strokeTextureColor = texture(strokeTextureFilepath, rotatedUV.x, rotatedUV.y,
+                    "alpha", alpha, "interp", "linear");
+
+    // Get input color from texture
+    color colorTexture = repeat_texture(colorTextureFilepath, scaledFloor.x, scaledFloor.y, 2.0);
+
+    if (alpha == 0.0)
+    {
+        // TODO: Return 1 for subtractive color mixing?
+        return color(0.0);
+    }
+
+    // TODO: Not multiplying by alpha is making us lose some detail from the stroke texture
+    // But multiplying by alpha is adding unrealistic outlines to the strokes
+    color finalColor = colorTexture;
+
+    return finalColor;
+}
+
+
+/**
+    @param acrylic_slider
+        clamped from 0.0 to 1.0
+        0.0 means fully water color
+        1.0 means fully acrylic
+*/
+shader painterlyPrototype(
+    float acrylic_slider = 0.0,
+    output vector out_color = vector(0.0, 0.0, 0.0)
+)
+{
+    // Get UV map
+    vector uv;
+    getattribute("geom:uv", uv);
+
+    string colorTexPaths[12] = {"../ShaderResources/brickTexture.jpg",
+                                "../ShaderResources/randomTexture.png",
+                                "../ShaderResources/colorTexture3.jpeg",
+                                "../ShaderResources/colorTexture4.jpg",
+                                "../ShaderResources/colorTexture5.jpg",
+                                "../ShaderResources/colorTexture6.webp",
+                                "../ShaderResources/colorTexture7.jpg",
+                                "../ShaderResources/colorTexture8.jpg",
+                                "../ShaderResources/colorTexture9.jpg",
+                                "../ShaderResources/colorTexture10.jpg",
+                                "../ShaderResources/colorTexture11.webp",
+                                "../ShaderResources/colorTexture12.jpeg"};
+
+    int numTextures = arraylength(colorTexPaths);
+
+    string strokeTextureFilepath = "../ShaderResources/brushstroke.png";
+
+    float mixAlpha = clamp(acrylic_slider, 0.0, 1.0) * 0.5 + 0.5;
+
+    color finalColor = color(0.0, 0.0, 0.0);
+    for (int ii = 0; ii < numTextures; ii++)
+    {
+        // Uncomment this line and comment out lines 136 and 137
+        // if you want to apply a different texture for each iteration
+        /*
+        color texColor = applyStrokes(strokeTextureFilepath, colorTexPaths[ii],
+                                    uv, ii);
+        */
+
+        // Currently applying the same texture for each iteration
+        color texColor = applyStrokes(strokeTextureFilepath, "../ShaderResources/colorTexture10.jpg",
+                                    uv, ii);
+        
+        if (length(texColor - color(0.0)) > 0.001)
+        {
+            finalColor = mix( ii/float(ii+1) * finalColor, 1.0/float(ii+1) * texColor, mixAlpha);
+        }
+    }
+
+    out_color = finalColor;
+}
