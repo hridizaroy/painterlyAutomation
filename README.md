@@ -10,8 +10,8 @@ Painterly Automation can be used to paint-ify any texture map. This includes map
 ## Demos
 ### Dependencies
 Must have Blender 4.3.x or Maya 2025 installed.
-Blender: https://www.blender.org/download/
-Maya: https://www.autodesk.com/products/maya/free-trial
+- Blender: https://www.blender.org/download/
+- Maya: https://www.autodesk.com/products/maya/free-trial
 
 ### How to run the demos
 #### Blender
