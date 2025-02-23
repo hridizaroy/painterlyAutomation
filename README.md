@@ -14,7 +14,7 @@ Blender: https://www.blender.org/download/
 Maya: https://www.autodesk.com/products/maya/free-trial
 
 ### How to run the demos
-#### Demos/blenderPainterlyDemo.blend
+#### Blender
 - Download this repo as a zip and extract it
 - Navigate to the "Demos/" folder, and open the "Demos/blenderPainterlyDemo.blend" file
 - Navigate to the Shading tab in Blender
